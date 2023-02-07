@@ -7,6 +7,7 @@ import './styles.css';
 import { Post } from '../../components/Posts';
 import { loadPosts } from '../../utils/load-posts'
 import { Button } from '../../components/Button';
+import { TextInput } from '../../components/TextInput';
 
 
 export class Home extends Component {
@@ -14,7 +15,8 @@ export class Home extends Component {
     posts: [],
     allPost: [],
     page: 0,
-    postsPerPage: 30
+    postsPerPage: 2,
+    searchValue: ''
   }
 
 
@@ -45,6 +47,10 @@ export class Home extends Component {
     posts.push(...nextPosts);
     this.setState({ posts, page: nextPage })
   }
+  handleChange = (e) => {
+    const { value } = e.target;
+    this.setState({ searchValue: value })
+  }
 
 
   // handledTimeOut = () => {
@@ -54,17 +60,45 @@ export class Home extends Component {
 
   // }
   render() {
-    const { posts, page, postsPerPage, allPost } = this.state;
+    const { posts, page, postsPerPage, allPost, searchValue } = this.state;
     const noMorePosts = page + postsPerPage >= allPost.length;
+    const filteredPosts = !!searchValue ?
+      allPost.filter(post => {
+        return post.title.toLowerCase().includes(
+          searchValue.toLocaleLowerCase()
+        );
+      })
+      :
+      posts;
     return (
       <section className='container'>
-        <Post posts={posts} />
+        <div className='search-container'>
+
+          {!!searchValue && (
+            <h1> Search Value: {searchValue}</h1>
+          )}
+
+          <TextInput searchValue={searchValue} handleChange={this.handleChange} />
+        </div>
+
+        {filteredPosts.length > 0 && (
+          <Post posts={filteredPosts} />
+
+        )}
+        {filteredPosts.length === 0 && (
+          <h2>Não existem posts =( </h2>
+
+        )}
+
         <div className='button-container'>
-          <Button
-            text="Load more posts"
-            onClick={this.loadMorePosts}
-            disabled={noMorePosts}
-          />
+          {!searchValue && (
+
+            <Button
+              text="Load more posts"
+              onClick={this.loadMorePosts}
+              disabled={noMorePosts}
+            />
+          )}
         </div>
       </section>
     );
